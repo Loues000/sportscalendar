@@ -55,6 +55,8 @@ const elements = {
   sportsMeta: document.querySelector("#sports-meta"),
   events: document.querySelector("#events"),
   stats: document.querySelector("#stats"),
+  eventSearch: document.querySelector("#event-search"),
+  toggleEventSearch: document.querySelector("#toggle-event-search"),
   exportStatus: document.querySelector("#export-status"),
   exportEventsCount: document.querySelector("#export-events-count"),
   exportSportsCount: document.querySelector("#export-sports-count"),
@@ -93,6 +95,7 @@ async function boot() {
     state.selectedEventIds.add(event.id);
   }
 
+  setEventSearchCollapsed(false);
   bindEvents();
   renderSports();
   applyFilters();
@@ -103,6 +106,11 @@ function bindEvents() {
   elements.query.addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLocaleLowerCase();
     applyFilters();
+  });
+
+  elements.toggleEventSearch.addEventListener("click", () => {
+    const collapsed = !elements.eventSearch.hidden;
+    setEventSearchCollapsed(collapsed);
   });
 
   elements.titleFormat.addEventListener("change", (event) => {
@@ -211,6 +219,15 @@ function bindEvents() {
   elements.exportButton.addEventListener("click", () => {
     exportIcs();
   });
+}
+
+function setEventSearchCollapsed(collapsed) {
+  elements.eventSearch.hidden = collapsed;
+  elements.toggleEventSearch.setAttribute("aria-expanded", String(!collapsed));
+  elements.toggleEventSearch.textContent = collapsed ? "Show search" : "Hide search";
+  if (!collapsed) {
+    elements.query.focus();
+  }
 }
 
 function applyFilters() {

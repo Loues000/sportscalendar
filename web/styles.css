@@ -339,6 +339,10 @@ select {
   background: var(--surface-raised);
 }
 
+.event-search[hidden] {
+  display: none;
+}
+
 .event-list {
   max-height: 500px;
   overflow-y: auto;
