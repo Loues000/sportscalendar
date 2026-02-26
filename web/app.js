@@ -112,12 +112,14 @@ function bindEvents() {
 
   elements.sportsAll.addEventListener("click", () => {
     state.selectedSports = new Set(state.sports);
+    syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
   });
 
   elements.sportsNone.addEventListener("click", () => {
     state.selectedSports = new Set();
+    syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
   });
@@ -136,6 +138,7 @@ function bindEvents() {
     } else {
       state.selectedSports.delete(sport);
     }
+    syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
   });
@@ -181,12 +184,6 @@ function bindEvents() {
 function applyFilters() {
   const query = state.query;
   state.visibleEvents = state.events.filter((event) => {
-    if (state.selectedSports.size === 0) {
-      return false;
-    }
-    if (!state.selectedSports.has(event.sport)) {
-      return false;
-    }
     if (!query) {
       return true;
     }
@@ -320,9 +317,7 @@ function exportIcs() {
 }
 
 function getSelectedSummary() {
-  const events = state.events.filter(
-    (event) => state.selectedEventIds.has(event.id) && state.selectedSports.has(event.sport)
-  );
+  const events = state.events.filter((event) => state.selectedEventIds.has(event.id));
   const sportsCount = new Set(events.map((event) => event.sport).filter(Boolean)).size;
   return {
     events,
@@ -561,4 +556,10 @@ function normalizeSportKey(value) {
     .replaceAll("ß", "ss")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function syncEventChecksToSportsSelection() {
+  state.selectedEventIds = new Set(
+    state.events.filter((event) => state.selectedSports.has(event.sport)).map((event) => event.id)
+  );
 }
