@@ -330,6 +330,15 @@ select {
   border-bottom: 1px solid var(--line);
 }
 
+.event-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-raised);
+}
+
 .event-list {
   max-height: 500px;
   overflow-y: auto;
