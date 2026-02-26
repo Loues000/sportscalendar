@@ -143,6 +143,38 @@ function bindEvents() {
     applyFilters();
   });
 
+  elements.sports.addEventListener("click", (event) => {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+
+    const actionButton = event.target.closest("button[data-group-action]");
+    if (!(actionButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const category = actionButton.dataset.groupName;
+    const action = actionButton.dataset.groupAction;
+    if (!category || !action) {
+      return;
+    }
+
+    const categorySports = getSportsForCategory(category);
+    if (action === "all") {
+      for (const sport of categorySports) {
+        state.selectedSports.add(sport);
+      }
+    } else if (action === "none") {
+      for (const sport of categorySports) {
+        state.selectedSports.delete(sport);
+      }
+    }
+
+    syncEventChecksToSportsSelection();
+    renderSports();
+    applyFilters();
+  });
+
   elements.events.addEventListener("change", (event) => {
     if (!(event.target instanceof HTMLInputElement)) {
       return;
@@ -213,11 +245,33 @@ function renderSports() {
     title.textContent = group.category;
 
     const selectedCount = group.sports.filter((sport) => state.selectedSports.has(sport)).length;
+    const meta = document.createElement("div");
+    meta.className = "sport-group-meta";
+
     const count = document.createElement("span");
     count.className = "sport-group-count";
     count.textContent = `${selectedCount}/${group.sports.length}`;
 
-    header.append(title, count);
+    const actions = document.createElement("div");
+    actions.className = "sport-group-actions";
+
+    const selectAll = document.createElement("button");
+    selectAll.type = "button";
+    selectAll.className = "sport-group-action";
+    selectAll.dataset.groupAction = "all";
+    selectAll.dataset.groupName = group.category;
+    selectAll.textContent = "All";
+
+    const selectNone = document.createElement("button");
+    selectNone.type = "button";
+    selectNone.className = "sport-group-action";
+    selectNone.dataset.groupAction = "none";
+    selectNone.dataset.groupName = group.category;
+    selectNone.textContent = "None";
+
+    actions.append(selectAll, selectNone);
+    meta.append(count, actions);
+    header.append(title, meta);
 
     const grid = document.createElement("div");
     grid.className = "sport-group-grid";
@@ -556,6 +610,12 @@ function normalizeSportKey(value) {
     .replaceAll("ß", "ss")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function getSportsForCategory(categoryName) {
+  const groupedSports = groupSportsByCategory(state.sports);
+  const match = groupedSports.find((group) => group.category === categoryName);
+  return match ? match.sports : [];
 }
 
 function syncEventChecksToSportsSelection() {

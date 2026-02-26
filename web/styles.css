@@ -223,6 +223,7 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   background: var(--surface-raised);
@@ -241,6 +242,25 @@ select {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
+}
+
+.sport-group-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sport-group-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sport-group-action {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
 }
 
 .sport-group-grid {
@@ -524,6 +544,16 @@ select {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .sport-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sport-group-meta {
+    width: 100%;
+    justify-content: space-between;
   }
   
   .export-dock {
