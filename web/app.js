@@ -1,6 +1,52 @@
 const DATA_URL = "../data/sample_events_2025.tsv";
 const DATE_PATTERN = /(\d{1,2}\.\d{1,2}\.\d{4})/g;
 const FIXED_DTSTAMP = "20000101T000000Z";
+const SPORT_CATEGORIES = [
+  {
+    name: "Top Sports",
+    keys: ["fussball", "tennis", "basketball", "handball", "american football", "eishockey", "darts"],
+  },
+  {
+    name: "Ball Sports",
+    keys: ["badminton", "beachhandball", "feldhockey", "floorball", "unihockey", "volleyball", "wasserball", "tischtennis"],
+  },
+  {
+    name: "Athletics & Endurance",
+    keys: ["leichtathletik", "marathon", "triathlon", "moderner funfkampf", "radsport"],
+  },
+  {
+    name: "Winter Sports",
+    keys: [
+      "biathlon",
+      "bobsport / skeleton",
+      "curling",
+      "eiskunstlauf",
+      "eisschnelllauf",
+      "freestyle-skiing",
+      "rennrodeln",
+      "shorttrack",
+      "ski alpin",
+      "ski nordisch",
+      "skibergsteigen",
+      "snowboard",
+    ],
+  },
+  {
+    name: "Combat & Precision",
+    keys: ["boxen", "fechten", "gewichtheben", "judo", "ringen", "bogenschiessen", "snooker"],
+  },
+  {
+    name: "Water & Outdoor",
+    keys: ["kanusport", "rudern", "reiten", "sportklettern", "schwimmsport"],
+  },
+  {
+    name: "Mind & Mixed",
+    keys: ["schach", "diverse", "multisportveranstaltung", "geratturnen", "rhythmische sportgymnastik", "trampolinturnen"],
+  },
+];
+const SPORT_CATEGORY_BY_KEY = new Map(
+  SPORT_CATEGORIES.flatMap((category) => category.keys.map((key) => [key, category.name]))
+);
 
 const elements = {
   sports: document.querySelector("#sports"),
@@ -155,25 +201,51 @@ function applyFilters() {
 function renderSports() {
   elements.sports.innerHTML = "";
   const fragment = document.createDocumentFragment();
+  const groupedSports = groupSportsByCategory(state.sports);
 
-  for (const sport of state.sports) {
-    const label = document.createElement("label");
-    label.className = "sport-item";
+  for (const group of groupedSports) {
+    const section = document.createElement("section");
+    section.className = "sport-group";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = state.selectedSports.has(sport);
-    checkbox.dataset.sport = sport;
+    const header = document.createElement("header");
+    header.className = "sport-group-header";
 
-    const text = document.createElement("span");
-    text.textContent = sport;
+    const title = document.createElement("h3");
+    title.className = "sport-group-title";
+    title.textContent = group.category;
 
-    label.append(checkbox, text);
-    fragment.append(label);
+    const selectedCount = group.sports.filter((sport) => state.selectedSports.has(sport)).length;
+    const count = document.createElement("span");
+    count.className = "sport-group-count";
+    count.textContent = `${selectedCount}/${group.sports.length}`;
+
+    header.append(title, count);
+
+    const grid = document.createElement("div");
+    grid.className = "sport-group-grid";
+
+    for (const sport of group.sports) {
+      const label = document.createElement("label");
+      label.className = "sport-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = state.selectedSports.has(sport);
+      checkbox.dataset.sport = sport;
+
+      const text = document.createElement("span");
+      text.textContent = sport;
+
+      label.append(checkbox, text);
+      grid.append(label);
+    }
+
+    section.append(header, grid);
+    fragment.append(section);
   }
 
   elements.sports.append(fragment);
-  elements.sportsMeta.textContent = `${state.selectedSports.size}/${state.sports.length} sports active`;
+  elements.sportsMeta.textContent = `${state.selectedSports.size}/${state.sports.length} sports active in ${groupedSports.length} groups`;
 }
 
 function renderEvents() {
@@ -437,4 +509,44 @@ function hashHex(text) {
     hash = Math.imul(hash, 16777619);
   }
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function groupSportsByCategory(sports) {
+  const grouped = new Map();
+
+  for (const sport of sports) {
+    const category = resolveSportCategory(sport);
+    if (!grouped.has(category)) {
+      grouped.set(category, []);
+    }
+    grouped.get(category).push(sport);
+  }
+
+  const ordered = [...SPORT_CATEGORIES.map((category) => category.name), "And More"];
+  const result = [];
+
+  for (const category of ordered) {
+    const categorySports = grouped.get(category);
+    if (!categorySports || categorySports.length === 0) {
+      continue;
+    }
+    categorySports.sort((left, right) => left.localeCompare(right, undefined, { sensitivity: "base" }));
+    result.push({ category, sports: categorySports });
+  }
+
+  return result;
+}
+
+function resolveSportCategory(sport) {
+  return SPORT_CATEGORY_BY_KEY.get(normalizeSportKey(sport)) ?? "And More";
+}
+
+function normalizeSportKey(value) {
+  return value
+    .toLocaleLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replaceAll("ß", "ss")
+    .replace(/\s+/g, " ")
+    .trim();
 }
