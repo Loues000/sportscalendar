@@ -341,6 +341,18 @@ select {
   padding: 14px 20px;
   border-bottom: 1px solid var(--line);
   background: var(--surface-raised);
+  max-height: 120px;
+  opacity: 1;
+  transform: translateY(0);
+  overflow: hidden;
+  transition: max-height 220ms ease, opacity 180ms ease, transform 220ms ease, padding 220ms ease, border-bottom-width 220ms ease;
+}
+
+.event-search-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .search-toggle {
@@ -360,16 +372,34 @@ select {
   height: 15px;
 }
 
-.icon-search {
-  display: none;
+.search-toggle-open {
+  width: 0;
+  height: 0;
+  padding: 0;
+  border-width: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 180ms ease, transform 220ms ease, width 220ms ease, height 220ms ease, border-width 220ms ease;
 }
 
-.search-toggle[aria-expanded="false"] .icon-chevron {
-  display: none;
+.events-panel.search-collapsed .event-search {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom-width: 0;
 }
 
-.search-toggle[aria-expanded="false"] .icon-search {
-  display: inline-block;
+.events-panel.search-collapsed .search-toggle-open {
+  width: 26px;
+  height: 26px;
+  border-width: 1px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .event-list {

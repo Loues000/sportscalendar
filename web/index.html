@@ -51,7 +51,7 @@
         <div id="sports" class="sports-grid" aria-live="polite"></div>
       </section>
 
-      <section class="panel">
+      <section id="events-panel" class="panel events-panel">
         <div class="panel-header">
           <h2>Events</h2>
           <div class="actions">
@@ -60,22 +60,32 @@
           </div>
         </div>
         <div id="event-search" class="event-search">
-          <label for="query">Search events</label>
+          <div class="event-search-head">
+            <label for="query">Search events</label>
+            <button
+              id="collapse-event-search"
+              class="search-toggle search-toggle-close"
+              type="button"
+              aria-expanded="true"
+              aria-label="Collapse search"
+            >
+              <svg class="search-toggle-icon icon-chevron" aria-hidden="true" viewBox="0 0 20 20">
+                <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </button>
+          </div>
           <input id="query" type="search" placeholder="e.g. Open, Weltmeisterschaft..." />
         </div>
         <div class="stats">
           <span id="stats-text">Loading events…</span>
           <button
-            id="toggle-event-search"
-            class="search-toggle"
+            id="expand-event-search"
+            class="search-toggle search-toggle-open"
             type="button"
             aria-expanded="true"
-            aria-label="Collapse search"
+            aria-label="Expand search"
           >
-            <svg class="search-toggle-icon icon-chevron" aria-hidden="true" viewBox="0 0 20 20">
-              <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" />
-            </svg>
-            <svg class="search-toggle-icon icon-search" aria-hidden="true" viewBox="0 0 20 20">
+            <svg class="search-toggle-icon" aria-hidden="true" viewBox="0 0 20 20">
               <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" />
               <path d="M12.8 12.8 17 17" fill="none" stroke="currentColor" stroke-width="2" />
             </svg>

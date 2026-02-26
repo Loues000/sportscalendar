@@ -51,12 +51,14 @@ const SPORT_CATEGORY_BY_KEY = new Map(
 );
 
 const elements = {
+  eventsPanel: document.querySelector("#events-panel"),
   sports: document.querySelector("#sports"),
   sportsMeta: document.querySelector("#sports-meta"),
   events: document.querySelector("#events"),
   statsText: document.querySelector("#stats-text"),
   eventSearch: document.querySelector("#event-search"),
-  toggleEventSearch: document.querySelector("#toggle-event-search"),
+  collapseEventSearch: document.querySelector("#collapse-event-search"),
+  expandEventSearch: document.querySelector("#expand-event-search"),
   exportStatus: document.querySelector("#export-status"),
   exportEventsCount: document.querySelector("#export-events-count"),
   exportSportsCount: document.querySelector("#export-sports-count"),
@@ -108,9 +110,12 @@ function bindEvents() {
     applyFilters();
   });
 
-  elements.toggleEventSearch.addEventListener("click", () => {
-    const collapsed = !elements.eventSearch.hidden;
-    setEventSearchCollapsed(collapsed);
+  elements.collapseEventSearch.addEventListener("click", () => {
+    setEventSearchCollapsed(true);
+  });
+
+  elements.expandEventSearch.addEventListener("click", () => {
+    setEventSearchCollapsed(false);
   });
 
   elements.titleFormat.addEventListener("change", (event) => {
@@ -222,11 +227,15 @@ function bindEvents() {
 }
 
 function setEventSearchCollapsed(collapsed) {
-  elements.eventSearch.hidden = collapsed;
-  elements.toggleEventSearch.setAttribute("aria-expanded", String(!collapsed));
-  elements.toggleEventSearch.setAttribute("aria-label", collapsed ? "Expand search" : "Collapse search");
+  elements.eventsPanel.classList.toggle("search-collapsed", collapsed);
+  elements.collapseEventSearch.setAttribute("aria-expanded", String(!collapsed));
+  elements.expandEventSearch.setAttribute("aria-expanded", String(!collapsed));
+  elements.collapseEventSearch.setAttribute("aria-label", "Collapse search");
+  elements.expandEventSearch.setAttribute("aria-label", "Expand search");
   if (!collapsed) {
     elements.query.focus();
+  } else {
+    elements.expandEventSearch.focus();
   }
 }
 
