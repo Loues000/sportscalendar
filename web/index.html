@@ -57,13 +57,21 @@
           <div class="actions">
             <button id="select-visible" type="button">Select visible</button>
             <button id="clear-visible" type="button">Clear visible</button>
-            <button id="toggle-event-search" class="action-mini" type="button" aria-expanded="true">
-              Hide search
-            </button>
           </div>
         </div>
         <div id="event-search" class="event-search">
-          <label for="query">Search events</label>
+          <div class="event-search-head">
+            <label for="query">Search events</label>
+            <button
+              id="toggle-event-search"
+              class="search-toggle"
+              type="button"
+              aria-expanded="true"
+              aria-label="Collapse search"
+            >
+              <span class="search-toggle-icon" aria-hidden="true">▾</span>
+            </button>
+          </div>
           <input id="query" type="search" placeholder="e.g. Open, Weltmeisterschaft..." />
         </div>
         <p id="stats" class="stats">Loading events…</p>

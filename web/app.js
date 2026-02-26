@@ -222,9 +222,10 @@ function bindEvents() {
 }
 
 function setEventSearchCollapsed(collapsed) {
-  elements.eventSearch.hidden = collapsed;
+  elements.eventSearch.classList.toggle("is-collapsed", collapsed);
+  elements.query.hidden = collapsed;
   elements.toggleEventSearch.setAttribute("aria-expanded", String(!collapsed));
-  elements.toggleEventSearch.textContent = collapsed ? "Show search" : "Hide search";
+  elements.toggleEventSearch.setAttribute("aria-label", collapsed ? "Expand search" : "Collapse search");
   if (!collapsed) {
     elements.query.focus();
   }
