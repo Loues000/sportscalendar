@@ -23,20 +23,6 @@
             <code>.ics</code> in one click.
           </p>
         </div>
-        <div class="hero-metrics" aria-label="Calendar metrics">
-          <article class="metric">
-            <p id="metric-loaded">0</p>
-            <span>Loaded</span>
-          </article>
-          <article class="metric">
-            <p id="metric-showing">0</p>
-            <span>Visible</span>
-          </article>
-          <article class="metric">
-            <p id="metric-selected">0</p>
-            <span>Selected</span>
-          </article>
-        </div>
       </header>
 
       <section class="panel controls">
@@ -81,11 +67,20 @@
         <div id="events" class="event-list" aria-live="polite"></div>
       </section>
 
-      <section class="panel export">
-        <button id="export" class="export-btn" type="button">Export selected ICS</button>
-        <p id="export-status" class="stats">No export yet.</p>
-      </section>
     </main>
+    <aside class="export-dock" aria-live="polite">
+      <div class="export-dock-inner">
+        <div class="export-overview">
+          <p class="export-kicker">Export preview</p>
+          <div class="export-stats">
+            <p><span id="export-events-count">0</span> events</p>
+            <p><span id="export-sports-count">0</span> sports</p>
+          </div>
+        </div>
+        <button id="export" class="export-btn" type="button">Export selected ICS (0)</button>
+      </div>
+      <p id="export-status" class="export-status">No export yet.</p>
+    </aside>
 
     <script type="module" src="./app.js"></script>
   </body>

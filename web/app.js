@@ -1,6 +1,7 @@
 const DATA_URL = "../data/sample_events_2025.tsv";
 const DATE_PATTERN = /(\d{1,2}\.\d{1,2}\.\d{4})/g;
 const FIXED_DTSTAMP = "20000101T000000Z";
+
 const SPORT_CATEGORIES = [
   {
     name: "Top Sports",
@@ -44,6 +45,7 @@ const SPORT_CATEGORIES = [
     keys: ["schach", "diverse", "multisportveranstaltung", "geratturnen", "rhythmische sportgymnastik", "trampolinturnen"],
   },
 ];
+
 const SPORT_CATEGORY_BY_KEY = new Map(
   SPORT_CATEGORIES.flatMap((category) => category.keys.map((key) => [key, category.name]))
 );
@@ -54,9 +56,8 @@ const elements = {
   events: document.querySelector("#events"),
   stats: document.querySelector("#stats"),
   exportStatus: document.querySelector("#export-status"),
-  metricLoaded: document.querySelector("#metric-loaded"),
-  metricShowing: document.querySelector("#metric-showing"),
-  metricSelected: document.querySelector("#metric-selected"),
+  exportEventsCount: document.querySelector("#export-events-count"),
+  exportSportsCount: document.querySelector("#export-sports-count"),
   query: document.querySelector("#query"),
   titleFormat: document.querySelector("#title-format"),
   calendarName: document.querySelector("#calendar-name"),
@@ -96,7 +97,6 @@ async function boot() {
   renderSports();
   applyFilters();
   elements.exportStatus.textContent = "No export yet.";
-  document.body.classList.add("is-ready");
 }
 
 function bindEvents() {
@@ -190,6 +190,7 @@ function applyFilters() {
     if (!query) {
       return true;
     }
+
     const text = `${event.title} ${event.sport} ${event.location}`.toLocaleLowerCase();
     return text.includes(query);
   });
@@ -275,7 +276,7 @@ function renderEvents() {
 
     const meta = document.createElement("div");
     meta.className = "event-meta";
-    meta.textContent = `${formatDateRange(event.startDate, event.endDateExclusive)} • ${event.location || "No location"}`;
+    meta.textContent = `${formatDateRange(event.startDate, event.endDateExclusive)} | ${event.location || "No location"}`;
 
     const content = document.createElement("div");
     content.className = "event-content";
@@ -289,22 +290,22 @@ function renderEvents() {
 }
 
 function renderStats() {
-  elements.stats.textContent = `Loaded ${state.events.length} events • Showing ${state.visibleEvents.length} • Selected ${state.selectedEventIds.size}`;
-  elements.metricLoaded.textContent = String(state.events.length);
-  elements.metricShowing.textContent = String(state.visibleEvents.length);
-  elements.metricSelected.textContent = String(state.selectedEventIds.size);
-  elements.exportButton.textContent = `Export selected ICS (${state.selectedEventIds.size})`;
+  const summary = getSelectedSummary();
+  elements.stats.textContent = `Loaded ${state.events.length} events | Showing ${state.visibleEvents.length} | Selected ${state.selectedEventIds.size}`;
+  elements.exportButton.textContent = `Export selected ICS (${summary.eventsCount})`;
+  elements.exportEventsCount.textContent = String(summary.eventsCount);
+  elements.exportSportsCount.textContent = String(summary.sportsCount);
 }
 
 function exportIcs() {
-  const selectedEvents = state.events.filter((event) => state.selectedEventIds.has(event.id));
-  if (selectedEvents.length === 0) {
+  const summary = getSelectedSummary();
+  if (summary.events.length === 0) {
     elements.exportStatus.textContent = "Select at least one event before exporting.";
     return;
   }
 
   const calendarName = elements.calendarName.value.trim() || "Sportkalender Selection";
-  const icsContent = createIcs(selectedEvents, calendarName, state.titleFormat);
+  const icsContent = createIcs(summary.events, calendarName, state.titleFormat);
   const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -315,7 +316,17 @@ function exportIcs() {
   anchor.remove();
   URL.revokeObjectURL(url);
 
-  elements.exportStatus.textContent = `Exported ${selectedEvents.length} events.`;
+  elements.exportStatus.textContent = `Exported ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
+}
+
+function getSelectedSummary() {
+  const events = state.events.filter((event) => state.selectedEventIds.has(event.id));
+  const sportsCount = new Set(events.map((event) => event.sport).filter(Boolean)).size;
+  return {
+    events,
+    eventsCount: events.length,
+    sportsCount,
+  };
 }
 
 async function loadEventsFromTsv(url) {
@@ -404,7 +415,7 @@ function formatDateRange(startDate, endDateExclusive) {
   const endInclusive = addDays(isoDateToDate(endDateExclusive), -1);
   const startLabel = start.toLocaleDateString("de-DE");
   const endLabel = endInclusive.toLocaleDateString("de-DE");
-  return startLabel === endLabel ? startLabel : `${startLabel} – ${endLabel}`;
+  return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
 }
 
 function buildSummary(event, titleFormat) {
@@ -456,7 +467,6 @@ function createIcs(events, calendarName, titleFormat) {
   }
 
   lines.push("END:VCALENDAR");
-
   return lines.flatMap((line) => foldLine(line)).join("\r\n") + "\r\n";
 }
 
