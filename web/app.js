@@ -320,7 +320,9 @@ function exportIcs() {
 }
 
 function getSelectedSummary() {
-  const events = state.events.filter((event) => state.selectedEventIds.has(event.id));
+  const events = state.events.filter(
+    (event) => state.selectedEventIds.has(event.id) && state.selectedSports.has(event.sport)
+  );
   const sportsCount = new Set(events.map((event) => event.sport).filter(Boolean)).size;
   return {
     events,
