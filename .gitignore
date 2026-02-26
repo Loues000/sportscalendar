@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+
+# Generated calendar files
+*.ics
+output/
+
+# Node
+node_modules/
+
+# Local editor/system files
+.DS_Store
+Thumbs.db

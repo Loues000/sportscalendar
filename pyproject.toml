@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sportkalender"
+version = "0.1.0"
+description = "Generate deterministic ICS calendar files from sport schedule TSV data."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "icalendar>=6.1.0",
+]
+
+[project.optional-dependencies]
+fetch = [
+  "pandas>=2.2.0",
+  "lxml>=5.2.0",
+  "html5lib>=1.1",
+]
+
+[project.scripts]
+sportkalender = "sportkalender.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sportkalender*"]
