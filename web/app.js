@@ -109,7 +109,7 @@ function bindEvents() {
   });
 
   elements.toggleEventSearch.addEventListener("click", () => {
-    const collapsed = !elements.eventSearch.hidden;
+    const collapsed = !elements.eventSearch.classList.contains("is-collapsed");
     setEventSearchCollapsed(collapsed);
   });
 

@@ -358,12 +358,20 @@ select {
 }
 
 .search-toggle-icon {
-  display: inline-block;
-  transition: transform 160ms ease;
+  width: 15px;
+  height: 15px;
+}
+
+.icon-search {
+  display: none;
 }
 
 .event-search.is-collapsed .search-toggle-icon {
-  transform: rotate(-90deg);
+  display: none;
+}
+
+.event-search.is-collapsed .icon-search {
+  display: inline-block;
 }
 
 .event-list {
