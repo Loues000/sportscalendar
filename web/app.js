@@ -54,7 +54,7 @@ const elements = {
   sports: document.querySelector("#sports"),
   sportsMeta: document.querySelector("#sports-meta"),
   events: document.querySelector("#events"),
-  stats: document.querySelector("#stats"),
+  statsText: document.querySelector("#stats-text"),
   eventSearch: document.querySelector("#event-search"),
   toggleEventSearch: document.querySelector("#toggle-event-search"),
   exportStatus: document.querySelector("#export-status"),
@@ -82,7 +82,7 @@ const state = {
 
 boot().catch((error) => {
   console.error(error);
-  elements.stats.textContent = "Could not load events. Please try again.";
+  elements.statsText.textContent = "Could not load events. Please try again.";
 });
 
 async function boot() {
@@ -109,7 +109,7 @@ function bindEvents() {
   });
 
   elements.toggleEventSearch.addEventListener("click", () => {
-    const collapsed = !elements.eventSearch.classList.contains("is-collapsed");
+    const collapsed = !elements.eventSearch.hidden;
     setEventSearchCollapsed(collapsed);
   });
 
@@ -222,8 +222,7 @@ function bindEvents() {
 }
 
 function setEventSearchCollapsed(collapsed) {
-  elements.eventSearch.classList.toggle("is-collapsed", collapsed);
-  elements.query.hidden = collapsed;
+  elements.eventSearch.hidden = collapsed;
   elements.toggleEventSearch.setAttribute("aria-expanded", String(!collapsed));
   elements.toggleEventSearch.setAttribute("aria-label", collapsed ? "Expand search" : "Collapse search");
   if (!collapsed) {
@@ -360,7 +359,7 @@ function renderEvents() {
 
 function renderStats() {
   const summary = getSelectedSummary();
-  elements.stats.textContent = `Loaded ${state.events.length} events | Showing ${state.visibleEvents.length} | Selected ${state.selectedEventIds.size}`;
+  elements.statsText.textContent = `Loaded ${state.events.length} events | Showing ${state.visibleEvents.length} | Selected ${state.selectedEventIds.size}`;
   elements.exportButton.textContent = `Export selected ICS (${summary.eventsCount})`;
   elements.exportEventsCount.textContent = String(summary.eventsCount);
   elements.exportSportsCount.textContent = String(summary.sportsCount);

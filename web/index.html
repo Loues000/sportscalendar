@@ -60,27 +60,27 @@
           </div>
         </div>
         <div id="event-search" class="event-search">
-          <div class="event-search-head">
-            <label for="query">Search events</label>
-            <button
-              id="toggle-event-search"
-              class="search-toggle"
-              type="button"
-              aria-expanded="true"
-              aria-label="Collapse search"
-            >
-              <svg class="search-toggle-icon icon-chevron" aria-hidden="true" viewBox="0 0 20 20">
-                <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" />
-              </svg>
-              <svg class="search-toggle-icon icon-search" aria-hidden="true" viewBox="0 0 20 20">
-                <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" />
-                <path d="M12.8 12.8 17 17" fill="none" stroke="currentColor" stroke-width="2" />
-              </svg>
-            </button>
-          </div>
+          <label for="query">Search events</label>
           <input id="query" type="search" placeholder="e.g. Open, Weltmeisterschaft..." />
         </div>
-        <p id="stats" class="stats">Loading events…</p>
+        <div class="stats">
+          <span id="stats-text">Loading events…</span>
+          <button
+            id="toggle-event-search"
+            class="search-toggle"
+            type="button"
+            aria-expanded="true"
+            aria-label="Collapse search"
+          >
+            <svg class="search-toggle-icon icon-chevron" aria-hidden="true" viewBox="0 0 20 20">
+              <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" />
+            </svg>
+            <svg class="search-toggle-icon icon-search" aria-hidden="true" viewBox="0 0 20 20">
+              <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M12.8 12.8 17 17" fill="none" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+        </div>
         <div id="events" class="event-list" aria-live="polite"></div>
       </section>
 
