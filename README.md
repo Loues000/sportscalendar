@@ -2,6 +2,27 @@
 
 Generate deterministic `.ics` files from tab-separated sports event data.
 
+## Web MVP
+
+A static web MVP is available in `web/`:
+
+- filter a ready-made sports event catalog
+- select events
+- export deterministic `.ics` in-browser
+
+Run locally from repository root:
+
+```bash
+py -m http.server 8000
+```
+
+Then open `http://localhost:8000/web/`.
+
+### Deploy options
+
+- **GitHub Pages**: publish from `main` branch root (`/`) and use `index.html` redirect.
+- **Vercel**: import repository; it serves the static files directly (entry: `index.html` / `web/index.html`).
+
 ## Quick start
 
 ```bash

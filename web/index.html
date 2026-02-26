@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sportkalender Web MVP</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="eyebrow">Sportkalender MVP</p>
+        <h1>Build your sports calendar in minutes</h1>
+        <p class="subtitle">
+          Pick the events you care about, filter by sport, and export a deterministic
+          <code>.ics</code> file.
+        </p>
+      </header>
+
+      <section class="panel controls">
+        <div class="control-group">
+          <label for="query">Search event name</label>
+          <input id="query" type="search" placeholder="e.g. Open, Weltmeisterschaft..." />
+        </div>
+        <div class="control-group">
+          <label for="calendar-name">Calendar name</label>
+          <input id="calendar-name" type="text" value="Sportkalender Selection" />
+        </div>
+        <div class="control-group">
+          <label for="title-format">Title format</label>
+          <select id="title-format">
+            <option value="sport_event">Sport - Event</option>
+            <option value="event_only">Event only</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Sports</h2>
+          <div class="actions">
+            <button id="sports-all" type="button">All</button>
+            <button id="sports-none" type="button">None</button>
+          </div>
+        </div>
+        <div id="sports" class="sports-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Events</h2>
+          <div class="actions">
+            <button id="select-visible" type="button">Select visible</button>
+            <button id="clear-visible" type="button">Clear visible</button>
+          </div>
+        </div>
+        <p id="stats" class="stats">Loading events…</p>
+        <div id="events" class="event-list" aria-live="polite"></div>
+      </section>
+
+      <section class="panel export">
+        <button id="export" class="export-btn" type="button">Export selected ICS</button>
+        <p id="export-status" class="stats"></p>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
