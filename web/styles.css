@@ -263,6 +263,14 @@ select {
   letter-spacing: 0.08em;
 }
 
+.action-mini {
+  padding: 4px 8px;
+  font-size: 10px;
+  border-width: 1px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
 .sport-group-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
