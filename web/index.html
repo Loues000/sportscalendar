@@ -4,17 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sportkalender Web MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <div class="ambient ambient-grid" aria-hidden="true"></div>
     <main class="app">
-      <header class="hero">
-        <p class="eyebrow">Sportkalender MVP</p>
-        <h1>Build your sports calendar in minutes</h1>
-        <p class="subtitle">
-          Pick the events you care about, filter by sport, and export a deterministic
-          <code>.ics</code> file.
-        </p>
+      <header class="hero panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Sportkalender MVP</p>
+          <h1>Build your personal season schedule</h1>
+          <p class="subtitle">
+            Pick from a ready event catalog, customize your view, and export a deterministic
+            <code>.ics</code> in one click.
+          </p>
+        </div>
+        <div class="hero-metrics" aria-label="Calendar metrics">
+          <article class="metric">
+            <p id="metric-loaded">0</p>
+            <span>Loaded</span>
+          </article>
+          <article class="metric">
+            <p id="metric-showing">0</p>
+            <span>Visible</span>
+          </article>
+          <article class="metric">
+            <p id="metric-selected">0</p>
+            <span>Selected</span>
+          </article>
+        </div>
       </header>
 
       <section class="panel controls">
@@ -43,6 +68,7 @@
             <button id="sports-none" type="button">None</button>
           </div>
         </div>
+        <p id="sports-meta" class="panel-meta">Loading sports…</p>
         <div id="sports" class="sports-grid" aria-live="polite"></div>
       </section>
 
@@ -60,7 +86,7 @@
 
       <section class="panel export">
         <button id="export" class="export-btn" type="button">Export selected ICS</button>
-        <p id="export-status" class="stats"></p>
+        <p id="export-status" class="stats">No export yet.</p>
       </section>
     </main>
 

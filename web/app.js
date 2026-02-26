@@ -4,9 +4,13 @@ const FIXED_DTSTAMP = "20000101T000000Z";
 
 const elements = {
   sports: document.querySelector("#sports"),
+  sportsMeta: document.querySelector("#sports-meta"),
   events: document.querySelector("#events"),
   stats: document.querySelector("#stats"),
   exportStatus: document.querySelector("#export-status"),
+  metricLoaded: document.querySelector("#metric-loaded"),
+  metricShowing: document.querySelector("#metric-showing"),
+  metricSelected: document.querySelector("#metric-selected"),
   query: document.querySelector("#query"),
   titleFormat: document.querySelector("#title-format"),
   calendarName: document.querySelector("#calendar-name"),
@@ -45,7 +49,8 @@ async function boot() {
   bindEvents();
   renderSports();
   applyFilters();
-  elements.exportStatus.textContent = "";
+  elements.exportStatus.textContent = "No export yet.";
+  document.body.classList.add("is-ready");
 }
 
 function bindEvents() {
@@ -85,6 +90,7 @@ function bindEvents() {
     } else {
       state.selectedSports.delete(sport);
     }
+    renderSports();
     applyFilters();
   });
 
@@ -129,10 +135,10 @@ function bindEvents() {
 function applyFilters() {
   const query = state.query;
   state.visibleEvents = state.events.filter((event) => {
-    if (state.selectedSports.size > 0 && !state.selectedSports.has(event.sport)) {
+    if (state.selectedSports.size === 0) {
       return false;
     }
-    if (state.selectedSports.size === 0) {
+    if (!state.selectedSports.has(event.sport)) {
       return false;
     }
     if (!query) {
@@ -167,6 +173,7 @@ function renderSports() {
   }
 
   elements.sports.append(fragment);
+  elements.sportsMeta.textContent = `${state.selectedSports.size}/${state.sports.length} sports active`;
 }
 
 function renderEvents() {
@@ -196,7 +203,7 @@ function renderEvents() {
 
     const meta = document.createElement("div");
     meta.className = "event-meta";
-    meta.textContent = `${formatDateRange(event.startDate, event.endDateExclusive)} · ${event.location || "No location"}`;
+    meta.textContent = `${formatDateRange(event.startDate, event.endDateExclusive)} • ${event.location || "No location"}`;
 
     const content = document.createElement("div");
     content.className = "event-content";
@@ -210,7 +217,11 @@ function renderEvents() {
 }
 
 function renderStats() {
-  elements.stats.textContent = `Loaded ${state.events.length} events · Showing ${state.visibleEvents.length} · Selected ${state.selectedEventIds.size}`;
+  elements.stats.textContent = `Loaded ${state.events.length} events • Showing ${state.visibleEvents.length} • Selected ${state.selectedEventIds.size}`;
+  elements.metricLoaded.textContent = String(state.events.length);
+  elements.metricShowing.textContent = String(state.visibleEvents.length);
+  elements.metricSelected.textContent = String(state.selectedEventIds.size);
+  elements.exportButton.textContent = `Export selected ICS (${state.selectedEventIds.size})`;
 }
 
 function exportIcs() {
