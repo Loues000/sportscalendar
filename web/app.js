@@ -1,6 +1,10 @@
 const DATA_URL = "../data/sample_events_2025.tsv";
 const DATE_PATTERN = /(\d{1,2}\.\d{1,2}\.\d{4})/g;
 const FIXED_DTSTAMP = "20000101T000000Z";
+const EXPORT_FILE_NAME = "sportkalender-selection.ics";
+const LOCAL_STORAGE_KEY = "sportkalender:web-state:v1";
+const SESSION_STORAGE_KEY = "sportkalender:web-state:session:v1";
+const MAX_PERSISTED_STATE_BYTES = 200 * 1024;
 
 const SPORT_CATEGORIES = [
   {
@@ -69,6 +73,8 @@ const elements = {
   sportsNone: document.querySelector("#sports-none"),
   selectVisible: document.querySelector("#select-visible"),
   clearVisible: document.querySelector("#clear-visible"),
+  invertVisible: document.querySelector("#invert-visible"),
+  selectedOnlyToggle: document.querySelector("#selected-only-toggle"),
   exportButton: document.querySelector("#export"),
 };
 
@@ -78,8 +84,10 @@ const state = {
   sports: [],
   selectedSports: new Set(),
   selectedEventIds: new Set(),
+  collapsedSportCategories: new Set(),
   query: "",
   titleFormat: "sport_event",
+  showSelectedOnly: false,
 };
 
 boot().catch((error) => {
@@ -93,21 +101,23 @@ async function boot() {
     a.localeCompare(b, undefined, { sensitivity: "base" })
   );
   state.selectedSports = new Set(state.sports);
-  for (const event of state.events) {
-    state.selectedEventIds.add(event.id);
-  }
+  state.selectedEventIds = new Set(state.events.map((event) => event.id));
+  state.collapsedSportCategories = getDefaultCollapsedSportCategories(state.sports);
+  hydrateStateFromStorage();
 
   setEventSearchCollapsed(false);
   bindEvents();
   renderSports();
   applyFilters();
   elements.exportStatus.textContent = "No export yet.";
+  persistState();
 }
 
 function bindEvents() {
   elements.query.addEventListener("input", (event) => {
-    state.query = event.target.value.trim().toLocaleLowerCase();
+    state.query = event.target.value;
     applyFilters();
+    persistState();
   });
 
   elements.collapseEventSearch.addEventListener("click", () => {
@@ -121,6 +131,12 @@ function bindEvents() {
   elements.titleFormat.addEventListener("change", (event) => {
     state.titleFormat = event.target.value;
     renderEvents();
+    renderStats();
+    persistState();
+  });
+
+  elements.calendarName.addEventListener("input", () => {
+    persistState();
   });
 
   elements.sportsAll.addEventListener("click", () => {
@@ -128,6 +144,7 @@ function bindEvents() {
     syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
+    persistState();
   });
 
   elements.sportsNone.addEventListener("click", () => {
@@ -135,6 +152,7 @@ function bindEvents() {
     syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
+    persistState();
   });
 
   elements.sports.addEventListener("change", (event) => {
@@ -154,10 +172,21 @@ function bindEvents() {
     syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
+    persistState();
   });
 
   elements.sports.addEventListener("click", (event) => {
     if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+
+    const toggleButton = event.target.closest("button[data-group-toggle='collapse']");
+    if (toggleButton instanceof HTMLButtonElement) {
+      const category = toggleButton.dataset.groupName;
+      if (!category) {
+        return;
+      }
+      toggleSportCategory(category);
       return;
     }
 
@@ -186,6 +215,7 @@ function bindEvents() {
     syncEventChecksToSportsSelection();
     renderSports();
     applyFilters();
+    persistState();
   });
 
   elements.events.addEventListener("change", (event) => {
@@ -203,6 +233,7 @@ function bindEvents() {
       state.selectedEventIds.delete(eventId);
     }
     renderStats();
+    persistState();
   });
 
   elements.selectVisible.addEventListener("click", () => {
@@ -211,6 +242,7 @@ function bindEvents() {
     }
     renderEvents();
     renderStats();
+    persistState();
   });
 
   elements.clearVisible.addEventListener("click", () => {
@@ -219,10 +251,30 @@ function bindEvents() {
     }
     renderEvents();
     renderStats();
+    persistState();
   });
 
-  elements.exportButton.addEventListener("click", () => {
-    exportIcs();
+  elements.invertVisible.addEventListener("click", () => {
+    for (const event of state.visibleEvents) {
+      if (state.selectedEventIds.has(event.id)) {
+        state.selectedEventIds.delete(event.id);
+      } else {
+        state.selectedEventIds.add(event.id);
+      }
+    }
+    renderEvents();
+    renderStats();
+    persistState();
+  });
+
+  elements.selectedOnlyToggle.addEventListener("click", () => {
+    state.showSelectedOnly = !state.showSelectedOnly;
+    applyFilters();
+    persistState();
+  });
+
+  elements.exportButton.addEventListener("click", async () => {
+    await exportIcs();
   });
 }
 
@@ -240,8 +292,16 @@ function setEventSearchCollapsed(collapsed) {
 }
 
 function applyFilters() {
-  const query = state.query;
+  const query = state.query.trim().toLocaleLowerCase();
   state.visibleEvents = state.events.filter((event) => {
+    if (!state.selectedSports.has(event.sport)) {
+      return false;
+    }
+
+    if (state.showSelectedOnly && !state.selectedEventIds.has(event.id)) {
+      return false;
+    }
+
     if (!query) {
       return true;
     }
@@ -260,11 +320,16 @@ function renderSports() {
   const groupedSports = groupSportsByCategory(state.sports);
 
   for (const group of groupedSports) {
+    const isCollapsed = state.collapsedSportCategories.has(group.category);
     const section = document.createElement("section");
     section.className = "sport-group";
+    section.classList.toggle("is-collapsed", isCollapsed);
 
     const header = document.createElement("header");
     header.className = "sport-group-header";
+
+    const heading = document.createElement("div");
+    heading.className = "sport-group-heading";
 
     const title = document.createElement("h3");
     title.className = "sport-group-title";
@@ -281,6 +346,16 @@ function renderSports() {
     const actions = document.createElement("div");
     actions.className = "sport-group-actions";
 
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "sport-group-toggle";
+    toggle.dataset.groupToggle = "collapse";
+    toggle.dataset.groupName = group.category;
+    toggle.setAttribute("aria-expanded", String(!isCollapsed));
+    toggle.setAttribute("aria-label", isCollapsed ? `Expand ${group.category}` : `Collapse ${group.category}`);
+    toggle.innerHTML =
+      '<svg class="sport-group-toggle-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+
     const selectAll = document.createElement("button");
     selectAll.type = "button";
     selectAll.className = "sport-group-action";
@@ -295,9 +370,10 @@ function renderSports() {
     selectNone.dataset.groupName = group.category;
     selectNone.textContent = "None";
 
-    actions.append(selectAll, selectNone);
+    actions.append(toggle, selectAll, selectNone);
+    heading.append(title);
     meta.append(count, actions);
-    header.append(title, meta);
+    header.append(heading, meta);
 
     const grid = document.createElement("div");
     grid.className = "sport-group-grid";
@@ -332,7 +408,9 @@ function renderEvents() {
   if (state.visibleEvents.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty";
-    empty.textContent = "No events match the current filter.";
+    empty.textContent = state.showSelectedOnly
+      ? "No selected events match the current filter."
+      : "No events match the current filter.";
     elements.events.append(empty);
     return;
   }
@@ -368,13 +446,15 @@ function renderEvents() {
 
 function renderStats() {
   const summary = getSelectedSummary();
-  elements.statsText.textContent = `Loaded ${state.events.length} events | Showing ${state.visibleEvents.length} | Selected ${state.selectedEventIds.size}`;
-  elements.exportButton.textContent = `Export selected ICS (${summary.eventsCount})`;
+  const selectedOnlyLabel = state.showSelectedOnly ? " | View: selected only" : "";
+  elements.statsText.textContent = `Loaded ${state.events.length} events | Showing ${state.visibleEvents.length} | Selected ${summary.eventsCount}${selectedOnlyLabel}`;
+  elements.selectedOnlyToggle.setAttribute("aria-pressed", String(state.showSelectedOnly));
+  elements.exportButton.textContent = getExportButtonLabel(summary.eventsCount);
   elements.exportEventsCount.textContent = String(summary.eventsCount);
   elements.exportSportsCount.textContent = String(summary.sportsCount);
 }
 
-function exportIcs() {
+async function exportIcs() {
   const summary = getSelectedSummary();
   if (summary.events.length === 0) {
     elements.exportStatus.textContent = "Select at least one event before exporting.";
@@ -384,26 +464,209 @@ function exportIcs() {
   const calendarName = elements.calendarName.value.trim() || "Sportkalender Selection";
   const icsContent = createIcs(summary.events, calendarName, state.titleFormat);
   const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "sportkalender-selection.ics";
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
+  const icsFile = createIcsFile(blob);
 
-  elements.exportStatus.textContent = `Exported ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
+  if (icsFile && canShareIcsFile(icsFile)) {
+    try {
+      await navigator.share({
+        files: [icsFile],
+        title: calendarName,
+        text: `Sportkalender export (${summary.eventsCount} events)`,
+      });
+      elements.exportStatus.textContent = `Shared ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        elements.exportStatus.textContent = "Share canceled. You can try again or download instead.";
+        return;
+      }
+    }
+  }
+
+  triggerIcsDownload(blob, EXPORT_FILE_NAME);
+  elements.exportStatus.textContent = `Downloaded ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
 }
 
 function getSelectedSummary() {
-  const events = state.events.filter((event) => state.selectedEventIds.has(event.id));
+  const events = state.events.filter(
+    (event) => state.selectedSports.has(event.sport) && state.selectedEventIds.has(event.id)
+  );
   const sportsCount = new Set(events.map((event) => event.sport).filter(Boolean)).size;
   return {
     events,
     eventsCount: events.length,
     sportsCount,
   };
+}
+
+function getExportButtonLabel(eventsCount) {
+  return canAttemptNativeShare() ? `Share or download ICS (${eventsCount})` : `Download ICS (${eventsCount})`;
+}
+
+function canAttemptNativeShare() {
+  return typeof navigator.share === "function" && typeof navigator.canShare === "function" && typeof File === "function";
+}
+
+function createIcsFile(blob) {
+  if (typeof File !== "function") {
+    return null;
+  }
+  return new File([blob], EXPORT_FILE_NAME, { type: "text/calendar;charset=utf-8" });
+}
+
+function canShareIcsFile(file) {
+  if (!canAttemptNativeShare()) {
+    return false;
+  }
+  try {
+    return navigator.canShare({ files: [file] });
+  } catch {
+    return false;
+  }
+}
+
+function triggerIcsDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function hydrateStateFromStorage() {
+  const stored = readStoredState();
+  if (!stored || typeof stored !== "object") {
+    elements.query.value = state.query;
+    elements.titleFormat.value = state.titleFormat;
+    return;
+  }
+
+  const eventsById = new Map(state.events.map((event) => [event.id, event]));
+
+  if (Array.isArray(stored.selectedSports)) {
+    state.selectedSports = new Set(stored.selectedSports.filter((sport) => state.sports.includes(sport)));
+  }
+
+  const availableCategories = new Set(groupSportsByCategory(state.sports).map((group) => group.category));
+  if (Array.isArray(stored.collapsedSportCategories)) {
+    state.collapsedSportCategories = new Set(
+      stored.collapsedSportCategories.filter((category) => availableCategories.has(category))
+    );
+  }
+
+  if (Array.isArray(stored.selectedEventIds)) {
+    state.selectedEventIds = new Set(
+      stored.selectedEventIds.filter((id) => {
+        const event = eventsById.get(id);
+        return Boolean(event && state.selectedSports.has(event.sport));
+      })
+    );
+  } else {
+    syncEventChecksToSportsSelection();
+  }
+
+  if (typeof stored.query === "string") {
+    state.query = stored.query;
+  }
+
+  if (stored.titleFormat === "sport_event" || stored.titleFormat === "event_only") {
+    state.titleFormat = stored.titleFormat;
+  }
+
+  if (typeof stored.calendarName === "string" && stored.calendarName.trim()) {
+    elements.calendarName.value = stored.calendarName.trim();
+  }
+
+  if (typeof stored.showSelectedOnly === "boolean") {
+    state.showSelectedOnly = stored.showSelectedOnly;
+  }
+
+  elements.query.value = state.query;
+  elements.titleFormat.value = state.titleFormat;
+}
+
+function persistState() {
+  const payload = {
+    selectedEventIds: [...state.selectedEventIds],
+    selectedSports: [...state.selectedSports],
+    collapsedSportCategories: [...state.collapsedSportCategories],
+    query: state.query,
+    titleFormat: state.titleFormat,
+    calendarName: elements.calendarName.value.trim(),
+    showSelectedOnly: state.showSelectedOnly,
+  };
+
+  const serialized = JSON.stringify(payload);
+  const bytes = getUtf8ByteLength(serialized);
+
+  if (bytes <= MAX_PERSISTED_STATE_BYTES) {
+    safeStorageWrite(localStorage, LOCAL_STORAGE_KEY, serialized);
+    safeStorageRemove(sessionStorage, SESSION_STORAGE_KEY);
+    return;
+  }
+
+  safeStorageWrite(sessionStorage, SESSION_STORAGE_KEY, serialized);
+  safeStorageRemove(localStorage, LOCAL_STORAGE_KEY);
+}
+
+function readStoredState() {
+  const localValue = safeStorageRead(localStorage, LOCAL_STORAGE_KEY);
+  if (localValue) {
+    const parsedLocal = safeJsonParse(localValue);
+    if (parsedLocal && typeof parsedLocal === "object") {
+      return parsedLocal;
+    }
+  }
+
+  const sessionValue = safeStorageRead(sessionStorage, SESSION_STORAGE_KEY);
+  if (!sessionValue) {
+    return null;
+  }
+
+  const parsedSession = safeJsonParse(sessionValue);
+  return parsedSession && typeof parsedSession === "object" ? parsedSession : null;
+}
+
+function safeStorageRead(storage, key) {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageWrite(storage, key, value) {
+  try {
+    storage.setItem(key, value);
+  } catch {
+    // Ignore storage failures (private mode/quota/user settings).
+  }
+}
+
+function safeStorageRemove(storage, key) {
+  try {
+    storage.removeItem(key);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function safeJsonParse(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function getUtf8ByteLength(value) {
+  if (typeof TextEncoder === "function") {
+    return new TextEncoder().encode(value).length;
+  }
+  return value.length * 2;
 }
 
 async function loadEventsFromTsv(url) {
@@ -642,6 +905,21 @@ function getSportsForCategory(categoryName) {
   const groupedSports = groupSportsByCategory(state.sports);
   const match = groupedSports.find((group) => group.category === categoryName);
   return match ? match.sports : [];
+}
+
+function getDefaultCollapsedSportCategories(sports) {
+  const groupedSports = groupSportsByCategory(sports);
+  return new Set(groupedSports.slice(3).map((group) => group.category));
+}
+
+function toggleSportCategory(category) {
+  if (state.collapsedSportCategories.has(category)) {
+    state.collapsedSportCategories.delete(category);
+  } else {
+    state.collapsedSportCategories.add(category);
+  }
+  renderSports();
+  persistState();
 }
 
 function syncEventChecksToSportsSelection() {

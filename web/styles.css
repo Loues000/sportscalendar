@@ -169,6 +169,19 @@ h2 {
 .actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.events-panel .actions button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.events-panel .actions button[aria-pressed="true"]:hover {
+  background: #e64500;
+  border-color: #e64500;
+  color: #fff;
 }
 
 button {
@@ -279,12 +292,49 @@ select {
   background: var(--surface-raised);
 }
 
+.sport-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 8px;
+}
+
 .sport-group-title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 1.1rem;
   letter-spacing: 0.06em;
+}
+
+.sport-group-toggle {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.sport-group-toggle:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.sport-group-toggle:active {
+  transform: none;
+}
+
+.sport-group-toggle-icon {
+  width: 14px;
+  height: 14px;
+  transition: transform 150ms ease;
+}
+
+.sport-group.is-collapsed .sport-group-toggle-icon {
+  transform: rotate(-90deg);
 }
 
 .sport-group-count {
@@ -311,6 +361,14 @@ select {
   padding: 4px 8px;
   font-size: 10px;
   letter-spacing: 0.08em;
+}
+
+.sport-group.is-collapsed .sport-group-header {
+  border-bottom: none;
+}
+
+.sport-group.is-collapsed .sport-group-grid {
+  display: none;
 }
 
 .sport-group-grid {
@@ -685,6 +743,14 @@ select {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .events-panel .actions {
+    width: 100%;
+  }
+
+  .events-panel .actions button {
+    flex: 1 1 calc(50% - 6px);
   }
 
   .sport-group-header {
