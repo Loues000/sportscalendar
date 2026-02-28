@@ -74,3 +74,37 @@
 - [x] Set default collapsed categories after grouping sports in boot flow.
 - [x] Keep restore logic compatible with persisted states.
 - [x] Verify via syntax check and state path review.
+
+## Slice: TheSportsDB Event Import (Multi-Sport, No Teams Yet)
+
+### Spec
+
+- Goal: Add a repeatable fetch pipeline that builds TSV event catalogs from TheSportsDB across multiple sports.
+- In scope:
+  - Python fetch script for event-only import from TheSportsDB.
+  - League-based fetch strategy (team-level features deferred).
+  - Current-season event coverage with deterministic TSV output.
+  - Guardrails for event count, deduplication, and missing data.
+- Out of scope:
+  - Team favorites/personalized team tracking.
+  - Live update feeds or automatic background sync.
+  - Odds, stats, or deep metadata beyond TSV columns.
+
+### Acceptance Criteria
+
+- Script can generate a TSV with approximately 1,000 events (target range: 800-1,500).
+- TSV rows map cleanly to existing parser schema: `Datum`, `Ereignis`, `Sportart`, `Ort`.
+- Output is deterministic for same inputs/config.
+- Script applies a hard cap (`--max-events`) and reports filtered/dropped rows.
+- At least 6 sports are covered in the default config for v1.
+
+### Checklist
+
+- [ ] Define v1 coverage list (sports + leagues) and save as repo config.
+- [ ] Implement `scripts/fetch_thesportsdb_events.py` with API key env-var auth.
+- [ ] Fetch season events per configured league and normalize to TSV rows.
+- [ ] Add dedup/validation rules (missing date, duplicate key, canceled/postponed policy).
+- [ ] Add CLI flags: `--season`, `--max-events`, `--output`, and `--dry-run`.
+- [ ] Write output to versioned TSV path and optionally refresh sample file.
+- [ ] Document usage and limits in `README.md`.
+- [ ] Verify with one dry run and one real run; confirm parser + ICS generation still pass.
