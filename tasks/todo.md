@@ -157,3 +157,29 @@
 - [x] Fix delegated click target guard in `web/app.js`.
 - [x] Prevent icon from intercepting pointer events in `web/styles.css`.
 - [x] Verify static syntax check (`node --check web/app.js`) and quick code-path review.
+
+## Slice: Mobile Panel Header in One Line
+
+### Spec
+
+- Goal: `panel-header` soll auf Mobile in einer Zeile bleiben statt untereinander zu umbrechen.
+- In scope:
+  - Mobile Layout-Regeln für `.panel-header` und Event-Panel-Actions anpassen.
+  - Actions im Events-Header einzeilig halten (horizontal scrollbar, falls nötig).
+  - `sports-grid` ohne Innenabstand rendern.
+- Out of scope:
+  - Desktop Header-Layout.
+  - Inhaltliche Änderungen an Buttons/Labels.
+
+### Acceptance Criteria
+
+- Auf Mobile bleibt `h2` + Actions im `panel-header` in einer Zeile.
+- Im Events-Panel bleiben Actions einzeilig; bei Platzmangel können sie horizontal gescrollt werden.
+- `.sports-grid` hat kein Padding.
+
+### Checklist
+
+- [x] Update mobile `.panel-header` styles in `web/styles.css`.
+- [x] Keep `.events-panel .actions` on one line on mobile.
+- [x] Set `.sports-grid` padding to `0`.
+- [x] Verify style rules and quick UI path review.
