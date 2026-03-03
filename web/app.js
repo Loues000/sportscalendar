@@ -178,7 +178,7 @@ function bindEvents() {
   });
 
   elements.sports.addEventListener("click", (event) => {
-    if (!(event.target instanceof HTMLElement)) {
+    if (!(event.target instanceof Element)) {
       return;
     }
 

@@ -134,3 +134,26 @@
 - [x] Add mobile-focused export dock styles in `web/styles.css`.
 - [x] Add export dock status state handling in `web/app.js`.
 - [x] Verify static syntax check (`node --check web/app.js`) and review affected UI paths.
+
+## Slice: Sport Group Toggle Tap Reliability
+
+### Spec
+
+- Goal: Collapse/Expand-Toggle in Sport-Gruppen soll auf Mobile zuverlässig beim ersten Tap reagieren.
+- In scope:
+  - Event-Delegation robust für SVG-Targets machen.
+  - Toggle-Icon darf Taps nicht abfangen.
+- Out of scope:
+  - Redesign der Sportgruppen-Header.
+  - Änderung der Collapse-Logik/Persistenz.
+
+### Acceptance Criteria
+
+- Tap/Klick auf den Pfeil klappt Gruppen konsistent ein/aus.
+- Taps auf SVG/Icon werden genauso verarbeitet wie Taps auf den Button-Hintergrund.
+
+### Checklist
+
+- [x] Fix delegated click target guard in `web/app.js`.
+- [x] Prevent icon from intercepting pointer events in `web/styles.css`.
+- [x] Verify static syntax check (`node --check web/app.js`) and quick code-path review.

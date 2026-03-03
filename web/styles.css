@@ -331,6 +331,7 @@ select {
   width: 14px;
   height: 14px;
   transition: transform 150ms ease;
+  pointer-events: none;
 }
 
 .sport-group.is-collapsed .sport-group-toggle-icon {
