@@ -2,6 +2,7 @@ const DATA_URL = "../data/sample_events_2025.tsv";
 const DATE_PATTERN = /(\d{1,2}\.\d{1,2}\.\d{4})/g;
 const FIXED_DTSTAMP = "20000101T000000Z";
 const EXPORT_FILE_NAME = "sportkalender-selection.ics";
+const IDLE_EXPORT_STATUS_TEXT = "No export yet.";
 const LOCAL_STORAGE_KEY = "sportkalender:web-state:v1";
 const SESSION_STORAGE_KEY = "sportkalender:web-state:session:v1";
 const MAX_PERSISTED_STATE_BYTES = 200 * 1024;
@@ -56,6 +57,7 @@ const SPORT_CATEGORY_BY_KEY = new Map(
 
 const elements = {
   eventsPanel: document.querySelector("#events-panel"),
+  exportDock: document.querySelector(".export-dock"),
   sports: document.querySelector("#sports"),
   sportsMeta: document.querySelector("#sports-meta"),
   events: document.querySelector("#events"),
@@ -109,7 +111,7 @@ async function boot() {
   bindEvents();
   renderSports();
   applyFilters();
-  elements.exportStatus.textContent = "No export yet.";
+  setExportStatus(IDLE_EXPORT_STATUS_TEXT);
   persistState();
 }
 
@@ -457,7 +459,7 @@ function renderStats() {
 async function exportIcs() {
   const summary = getSelectedSummary();
   if (summary.events.length === 0) {
-    elements.exportStatus.textContent = "Select at least one event before exporting.";
+    setExportStatus("Select at least one event before exporting.");
     return;
   }
 
@@ -473,18 +475,26 @@ async function exportIcs() {
         title: calendarName,
         text: `Sportkalender export (${summary.eventsCount} events)`,
       });
-      elements.exportStatus.textContent = `Shared ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
+      setExportStatus(`Shared ${summary.eventsCount} events across ${summary.sportsCount} sports.`);
       return;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        elements.exportStatus.textContent = "Share canceled. You can try again or download instead.";
+        setExportStatus("Share canceled. You can try again or download instead.");
         return;
       }
     }
   }
 
   triggerIcsDownload(blob, EXPORT_FILE_NAME);
-  elements.exportStatus.textContent = `Downloaded ${summary.eventsCount} events across ${summary.sportsCount} sports.`;
+  setExportStatus(`Downloaded ${summary.eventsCount} events across ${summary.sportsCount} sports.`);
+}
+
+function setExportStatus(message) {
+  elements.exportStatus.textContent = message;
+  if (!elements.exportDock) {
+    return;
+  }
+  elements.exportDock.dataset.status = message === IDLE_EXPORT_STATUS_TEXT ? "idle" : "active";
 }
 
 function getSelectedSummary() {

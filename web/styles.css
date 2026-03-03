@@ -717,7 +717,7 @@ select {
 
 @media (max-width: 640px) {
   .app {
-    padding: 24px 16px 220px;
+    padding: 24px 16px 156px;
   }
 
   .release-note {
@@ -764,27 +764,66 @@ select {
   }
   
   .export-dock {
-    width: calc(100vw - 20px);
-    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    width: auto;
+    transform: none;
+    bottom: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .export-dock-inner {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .export-overview {
+    min-width: 0;
+    gap: 0;
+  }
+
+  .export-kicker {
+    display: none;
   }
 
   .export-stats {
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .export-stats p {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .export-stats span {
+    font-size: 14px;
   }
 
   .export-btn {
-    width: 100%;
-    justify-self: stretch;
+    width: auto;
+    max-width: 56vw;
+    justify-self: end;
+    padding: 10px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .export-status {
-    padding: 0 12px 12px;
+    padding: 8px 12px 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+  }
+
+  .export-dock[data-status="idle"] .export-status {
+    display: none;
   }
 }
 

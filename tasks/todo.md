@@ -108,3 +108,29 @@
 - [ ] Write output to versioned TSV path and optionally refresh sample file.
 - [ ] Document usage and limits in `README.md`.
 - [ ] Verify with one dry run and one real run; confirm parser + ICS generation still pass.
+
+## Slice: Mobile Export Dock Kompakt
+
+### Spec
+
+- Goal: Mobile Sticky-Export-Banner so umstellen, dass es deutlich weniger vertikalen Platz einnimmt und nicht wie ein schwebender Block zwischen Content wirkt.
+- In scope:
+  - Kompaktes, vollbreites Bottom-Dock auf kleinen Viewports.
+  - Reduzierte mobile Informationsdichte (kein zusätzlicher Kicker, kompaktere Stats/Button).
+  - Mobile Idle-Zustand blendet Statuszeile aus, um Höhe zu sparen.
+- Out of scope:
+  - Desktop-Layout der Export-Leiste.
+  - Änderungen an Export-Logik/Dateiinhalt.
+
+### Acceptance Criteria
+
+- Auf mobilen Viewports ist die Export-Leiste sichtbar, aber merklich niedriger als zuvor.
+- Die Leiste sitzt bündig am unteren Bildschirmrand (kein freischwebender Abstand darunter).
+- Im Idle-Zustand (`No export yet.`) wird die Statuszeile auf mobile ausgeblendet.
+- Nach Export/Fehler bleibt eine Statusmeldung weiterhin sichtbar.
+
+### Checklist
+
+- [x] Add mobile-focused export dock styles in `web/styles.css`.
+- [x] Add export dock status state handling in `web/app.js`.
+- [x] Verify static syntax check (`node --check web/app.js`) and review affected UI paths.
