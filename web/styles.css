@@ -746,19 +746,26 @@ select {
     gap: 8px;
   }
 
+  #events-panel .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
   .events-panel .actions {
-    flex: 1;
-    min-width: 0;
-    width: auto;
-    justify-content: flex-end;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
+    flex: 0 1 auto;
+    min-width: 100%;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
 
   .events-panel .actions button {
-    flex: 0 0 auto;
+    flex: 1 1 calc(50% - 6px);
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 11px;
   }
 
   .sport-group-header {
